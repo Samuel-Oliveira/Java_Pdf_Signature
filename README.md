@@ -1,4 +1,5 @@
-# Java-PDf-Signature [![Build Status](https://travis-ci.org/Samuel-Oliveira/Java_Pdf_Signature.svg?branch=master)](https://travis-ci.org/Samuel-Oliveira/Java_Pdf_Signature) [![MIT License](https://img.shields.io/github/license/Samuel-Oliveira/Java_Pdf_Signature.svg) ](https://github.com/Samuel-Oliveira/Java_Pdf_Signature/blob/master/LICENSE) [![Maven Central](https://img.shields.io/maven-central/v/br.com.swconsultoria/java_pdf_signature.svg?label=Maven%20Central)](https://search.maven.org/artifact/br.com.swconsultoria/java_pdf_signature/1.0/jar)
+# Java-PDf-Signature [![Build Status](https://travis-ci.org/Samuel-Oliveira/Java_Pdf_Signature.svg?branch=master)](https://travis-ci.org/Samuel-Oliveira/Java_Pdf_Signature) [![MIT License](https://img.shields.io/github/license/Samuel-Oliveira/Java_Pdf_Signature.svg) ](https://github.com/Samuel-Oliveira/Java_Pdf_Signature/blob/master/LICENSE) [![Maven Central](https://img.shields.io/maven-central/v/br.com.swconsultoria/java-pdf-signature.svg?label=Maven%20Central)](https://search.maven.org/artifact/br.com.swconsultoria/java-pdf-signature/1.0/jar)
+
 Projeto Para implementação do Java-Pdf-Signature Utilizando PdfBox da Apache.
 
 ## Dúvidas, Sugestões ou Consultoria
