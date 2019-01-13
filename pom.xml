@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>br.com.samuelweb</groupId>
 	<artifactId>java-pdf-signature</artifactId>
-	<version>1.0</version>
+	<version>1.1-SNAPSHOT</version>
     <name>Java_Pdf_Signature</name>
     <description>Projeto Para implementação do Java-Pdf-Signature Utilizando PdfBox da Apache.</description>
     <url>https://github.com/Samuel-Oliveira/Java_Pdf_Signature</url>
@@ -19,7 +19,7 @@
         <url>https://github.com/Samuel-Oliveira/Java_Pdf_Signature</url>
         <connection>scm:git:git@github.com:Samuel-Oliveira/Java_Pdf_Signature.git</connection>
         <developerConnection>scm:git:git@github.com:Samuel-Oliveira/Java_Pdf_Signature.git</developerConnection>
-        <tag>java-pdf-signature-1.0</tag>
+        <tag>java_pdf_signature-1.0</tag>
     </scm>
 
     <properties>
