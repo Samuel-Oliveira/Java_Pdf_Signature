@@ -27,7 +27,7 @@ public class ValidationTimeStamp {
 
     private TSAClient tsaClient;
 
-    public ValidationTimeStamp(String tsaUrl) throws NoSuchAlgorithmException, MalformedURLException {
+    ValidationTimeStamp(String tsaUrl) throws NoSuchAlgorithmException, MalformedURLException {
         if (tsaUrl != null) {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             this.tsaClient = new TSAClient(new URL(tsaUrl), null, null, digest);
@@ -38,7 +38,7 @@ public class ValidationTimeStamp {
         return tsaClient.getTimeStampToken(IOUtils.toByteArray(content));
     }
 
-    public CMSSignedData addSignedTimeStamp(CMSSignedData signedData)
+    CMSSignedData addSignedTimeStamp(CMSSignedData signedData)
             throws IOException {
         SignerInformationStore signerStore = signedData.getSignerInfos();
         List<SignerInformation> newSigners = new ArrayList<>();

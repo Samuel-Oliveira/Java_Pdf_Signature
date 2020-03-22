@@ -1,5 +1,12 @@
 package br.com.swconsultoria.pdf_signature.pdfbox;
 
+import org.apache.pdfbox.io.IOUtils;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.tsp.*;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,38 +16,25 @@ import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 
-import org.apache.pdfbox.io.IOUtils;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
-import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.tsp.TSPException;
-import org.bouncycastle.tsp.TimeStampRequest;
-import org.bouncycastle.tsp.TimeStampRequestGenerator;
-import org.bouncycastle.tsp.TimeStampResponse;
-import org.bouncycastle.tsp.TimeStampToken;
-
 /**
  * @author Samuel Oliveira - samuk.exe@hotmail.com
  * Data: 16/12/2018 - 15:34
  */
-public class TSAClient {
+class TSAClient {
 
     private final URL url;
     private final String username;
     private final String password;
     private final MessageDigest digest;
 
-    public TSAClient(URL url, String username, String password, MessageDigest digest)
-    {
+    TSAClient(URL url, String username, String password, MessageDigest digest) {
         this.url = url;
         this.username = username;
         this.password = password;
         this.digest = digest;
     }
 
-    public byte[] getTimeStampToken(byte[] messageImprint) throws IOException
-    {
+    byte[] getTimeStampToken(byte[] messageImprint) throws IOException {
         digest.reset();
         byte[] hash = digest.digest(messageImprint);
 

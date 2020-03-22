@@ -1,6 +1,5 @@
 package br.com.swconsultoria.pdf_signature;
 
-import br.com.swconsultoria.certificado.CertificadoService;
 import br.com.swconsultoria.pdf_signature.dom.AssinaturaModel;
 import br.com.swconsultoria.pdf_signature.pdfbox.CreateSignatureBase;
 import br.com.swconsultoria.pdf_signature.utils.SigUtils;
@@ -8,15 +7,17 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
-import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureInterface;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSignDesigner;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.bouncycastle.cms.CMSSignedData;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Calendar;
 
 /**
@@ -24,11 +25,11 @@ import java.util.Calendar;
  */
 public class AssinaPdfImagem extends CreateSignatureBase {
 
-    private AssinaturaModel assinaturaModel;
     private final PDVisibleSigProperties visibleSignatureProperties = new PDVisibleSigProperties();
+    private AssinaturaModel assinaturaModel;
 
     public AssinaPdfImagem(AssinaturaModel assinaturaModel) throws Exception {
-        super(CertificadoService.getKeyStore(assinaturaModel.getCertificado()), assinaturaModel.getSenhaCertificado());
+        super(assinaturaModel.getCertificado());
         validaInformacoes(assinaturaModel);
         this.assinaturaModel = assinaturaModel;
         if (assinaturaModel.getTsa() != null && !assinaturaModel.getTsa().equals("")) {
@@ -50,8 +51,9 @@ public class AssinaPdfImagem extends CreateSignatureBase {
 
     }
 
-    public void assina() throws Exception {
+    public CMSSignedData assina() throws Exception {
 
+        CMSSignedData retorno;
         if (!new File(assinaturaModel.getCaminhoPdf()).exists()) {
             throw new Exception("Pdf não encontrado");
         }
@@ -95,9 +97,12 @@ public class AssinaPdfImagem extends CreateSignatureBase {
             signatureOptions.setPage(visibleSignatureProperties.getPage() - 1);
             doc.addSignature(signature, this, signatureOptions);
             doc.saveIncremental(fos);
+
+            retorno = SigUtils.getPKCS7(doc, Files.readAllBytes(Paths.get(assinaturaModel.getCaminhoPdfAssinado())));
         }
 
         IOUtils.closeQuietly(signatureOptions);
+        return retorno;
     }
 
     /**

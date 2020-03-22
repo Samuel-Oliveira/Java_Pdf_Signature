@@ -3,6 +3,8 @@ package br.com.swconsultoria.pdf_signature;
 import br.com.swconsultoria.certificado.Certificado;
 import br.com.swconsultoria.certificado.CertificadoService;
 import br.com.swconsultoria.pdf_signature.dom.AssinaturaModel;
+import br.com.swconsultoria.pdf_signature.utils.SigUtils;
+import org.bouncycastle.cms.CMSSignedData;
 
 /**
  * @author Samuel Oliveira - samuk.exe@hotmail.com
@@ -14,25 +16,26 @@ public class TesteAssinaturaPdf {
         try {
 
             //Cria Certificado
-            String caminhoCertificado = "d:/teste/certificado.pfx";
+            String caminhoCertificado = "/d/teste/certificado.pfx";
             String senhaCertificado = "123456";
             Certificado certificado = CertificadoService.certificadoPfx(caminhoCertificado, senhaCertificado);
 
             //Monta Objeto de assinatura
             AssinaturaModel assinaturaModel = new AssinaturaModel();
-            assinaturaModel.setCaminhoPdf("d:/termo.pdf");
-            assinaturaModel.setCaminhoPdfAssinado("d:/termoAssinado.pdf");
+            assinaturaModel.setCaminhoPdf("/d/termo.pdf");
+            assinaturaModel.setCaminhoPdfAssinado("/d/termoAssinado.pdf");
             assinaturaModel.setCertificado(certificado);
             assinaturaModel.setNomeAssinatura("Samuel Oliveira");
             assinaturaModel.setLocalAssinatura("São Paulo - SP - Brasil");
             assinaturaModel.setMotivoAssinatura("Motivo assinatura");
             assinaturaModel.setSenhaCertificado(senhaCertificado.toCharArray());
 
-			//Caso queira usar TSA
-			//assinaturaModel.setTsa("http://sha256timestamp.ws.symantec.com/sha256/timestamp");
+            //Caso queira usar TSA
+            //assinaturaModel.setTsa("http://sha256timestamp.ws.symantec.com/sha256/timestamp");
 
             AssinaPdf assinaPdf = new AssinaPdf(assinaturaModel);
-            assinaPdf.assina();
+            CMSSignedData retorno = assinaPdf.assina();
+            SigUtils.criaPKCS7(retorno, "/d/teste/PdfSignature/pkcs7.p7s");
 
         } catch (Exception e) {
             e.printStackTrace();

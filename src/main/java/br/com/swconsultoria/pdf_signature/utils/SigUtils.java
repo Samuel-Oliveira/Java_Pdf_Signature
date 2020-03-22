@@ -9,7 +9,12 @@ import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSProcessableByteArray;
+import org.bouncycastle.cms.CMSSignedData;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -155,5 +160,21 @@ public class SigUtils {
             }
         }
         return null;
+    }
+
+    public static CMSSignedData getPKCS7(PDDocument doc, byte[] pdfByte) throws CMSException, IOException {
+        PDSignature signature = doc.getSignatureDictionaries().get(0);
+
+        byte[] signatureAsBytes = signature.getContents(pdfByte);
+        byte[] signedContentAsBytes = signature.getSignedContent(pdfByte);
+        return new CMSSignedData(new CMSProcessableByteArray(signedContentAsBytes), signatureAsBytes);
+    }
+
+    public static void criaPKCS7(CMSSignedData signedData, String caminhoArquivo) throws IOException {
+        File file = new File(caminhoArquivo);
+        FileOutputStream os = new FileOutputStream(file);
+        os.write(signedData.getEncoded());
+        os.flush();
+        os.close();
     }
 }
