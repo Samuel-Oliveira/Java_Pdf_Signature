@@ -19,7 +19,7 @@
         <url>https://github.com/Samuel-Oliveira/Java_Pdf_Signature</url>
         <connection>scm:git:git@github.com:Samuel-Oliveira/Java_Pdf_Signature.git</connection>
         <developerConnection>scm:git:git@github.com:Samuel-Oliveira/Java_Pdf_Signature.git</developerConnection>
-        <tag>java_pdf_signature-1.0</tag>
+        <tag>java-pdf-signature-1.1</tag>
     </scm>
 
     <properties>
