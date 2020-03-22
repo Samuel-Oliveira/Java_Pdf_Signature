@@ -94,6 +94,7 @@ public class AssinaPdfImagem extends CreateSignatureBase {
 
             signatureOptions = new SignatureOptions();
             signatureOptions.setVisualSignature(visibleSignatureProperties.getVisibleSignature());
+            signatureOptions.setPreferredSignatureSize(SignatureOptions.DEFAULT_SIGNATURE_SIZE * 2);
             signatureOptions.setPage(visibleSignatureProperties.getPage() - 1);
             doc.addSignature(signature, this, signatureOptions);
             doc.saveIncremental(fos);

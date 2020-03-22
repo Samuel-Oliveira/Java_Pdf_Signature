@@ -22,8 +22,8 @@ public class TesteAssinaturaPdf {
 
             //Monta Objeto de assinatura
             AssinaturaModel assinaturaModel = new AssinaturaModel();
-            assinaturaModel.setCaminhoPdf("/d/termo.pdf");
-            assinaturaModel.setCaminhoPdfAssinado("/d/termoAssinado.pdf");
+            assinaturaModel.setCaminhoPdf("/d/teste/PdfSignature/TesteAssinatura.pdf");
+            assinaturaModel.setCaminhoPdfAssinado("/d/teste/PdfSignature/TesteAssinaturaAssinado.pdf");
             assinaturaModel.setCertificado(certificado);
             assinaturaModel.setNomeAssinatura("Samuel Oliveira");
             assinaturaModel.setLocalAssinatura("São Paulo - SP - Brasil");
@@ -31,7 +31,7 @@ public class TesteAssinaturaPdf {
             assinaturaModel.setSenhaCertificado(senhaCertificado.toCharArray());
 
             //Caso queira usar TSA
-            //assinaturaModel.setTsa("http://sha256timestamp.ws.symantec.com/sha256/timestamp");
+            assinaturaModel.setTsa("http://sha256timestamp.ws.symantec.com/sha256/timestamp");
 
             AssinaPdf assinaPdf = new AssinaPdf(assinaturaModel);
             CMSSignedData retorno = assinaPdf.assina();

@@ -29,7 +29,7 @@ public class TesteAssinaturaPdfImagem {
             //Monta Objeto de assinatura
             AssinaturaModel assinaturaModel = new AssinaturaModel();
             assinaturaModel.setCaminhoPdf("/d/teste/PdfSignature/TesteAssinatura.pdf");
-            assinaturaModel.setCaminhoPdfAssinado("/d/teste/PdfSignature/TesteAssinaturaAssinado.pdf");
+            assinaturaModel.setCaminhoPdfAssinado("/d/teste/PdfSignature/TesteAssinaturaAssinadoImg.pdf");
             assinaturaModel.setCertificado(certificado);
             assinaturaModel.setNomeAssinatura("Samuel Oliveira");
             assinaturaModel.setLocalAssinatura("São Paulo - SP - Brasil");
