@@ -3,17 +3,16 @@ package br.com.swconsultoria.pdf_signature;
 import br.com.swconsultoria.pdf_signature.dom.AssinaturaModel;
 import br.com.swconsultoria.pdf_signature.pdfbox.CreateSignatureBase;
 import br.com.swconsultoria.pdf_signature.utils.SigUtils;
+import org.apache.pdfbox.io.IOUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
-import org.bouncycastle.cms.CMSSignedData;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Calendar;
 
 /**
@@ -31,7 +30,7 @@ public class AssinaPdf extends CreateSignatureBase {
         }
     }
 
-    public CMSSignedData assina() throws Exception {
+    public void assina() throws Exception {
 
         if (!new File(assinaturaModel.getCaminhoPdf()).exists()) {
             throw new Exception("Pdf não encontrado");
@@ -39,8 +38,14 @@ public class AssinaPdf extends CreateSignatureBase {
 
         try (FileOutputStream fos = new FileOutputStream(new File(assinaturaModel.getCaminhoPdfAssinado()));
              PDDocument doc = PDDocument.load(new File(assinaturaModel.getCaminhoPdf()))) {
+            if (doc.isEncrypted()) {
+                try {
+                    doc.setAllSecurityToBeRemoved(true);
+                } catch (Exception e) {
+                    throw new Exception("O Documento está criptografado.", e);
+                }
+            }
             criaAssinatura(doc, fos);
-            return SigUtils.getPKCS7(doc, Files.readAllBytes(Paths.get(assinaturaModel.getCaminhoPdfAssinado())));
         }
 
     }
@@ -67,10 +72,17 @@ public class AssinaPdf extends CreateSignatureBase {
             SigUtils.setMDPPermission(document, signature, 2);
         }
 
+        if (SigUtils.verifica(assinaturaModel.getCamposFormulario()).isPresent()) {
+            PDAcroForm acroForm = document.getDocumentCatalog().getAcroForm();
+            SigUtils.preencheFormulario(document, acroForm, assinaturaModel.getCamposFormulario());
+        }
+
         SignatureOptions signatureOptions = new SignatureOptions();
         signatureOptions.setPreferredSignatureSize(SignatureOptions.DEFAULT_SIGNATURE_SIZE * 2);
         document.addSignature(signature, this, signatureOptions);
-        document.saveIncremental(saida);
+        document.save(saida);
+        document.close();
+        IOUtils.closeQuietly(signatureOptions);
 
     }
 

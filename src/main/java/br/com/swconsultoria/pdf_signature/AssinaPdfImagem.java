@@ -11,13 +11,12 @@ import org.apache.pdfbox.pdmodel.interactive.digitalsignature.SignatureOptions;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSigProperties;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.visible.PDVisibleSignDesigner;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDSignatureField;
 import org.bouncycastle.cms.CMSSignedData;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Calendar;
 
 /**
@@ -51,7 +50,7 @@ public class AssinaPdfImagem extends CreateSignatureBase {
 
     }
 
-    public CMSSignedData assina() throws Exception {
+    public void assina() throws Exception {
 
         CMSSignedData retorno;
         if (!new File(assinaturaModel.getCaminhoPdf()).exists()) {
@@ -61,18 +60,33 @@ public class AssinaPdfImagem extends CreateSignatureBase {
         SignatureOptions signatureOptions;
         try (FileOutputStream fos = new FileOutputStream(assinaturaModel.getCaminhoPdfAssinado());
              PDDocument doc = PDDocument.load(new File(assinaturaModel.getCaminhoPdf()))) {
+            if (doc.isEncrypted()) {
+                try {
+                    doc.setAllSecurityToBeRemoved(true);
+                } catch (Exception e) {
+                    throw new Exception("O Documento está criptografado.", e);
+                }
+            }
+
             int accessPermissions = SigUtils.getMDPPermission(doc);
             if (accessPermissions == 1) {
                 throw new IllegalStateException("Mudanças no documento não são permitidas.");
             }
 
-            PDSignature signature = new PDSignature();
+            PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm();
+            if (SigUtils.verifica(assinaturaModel.getCamposFormulario()).isPresent()) {
+                SigUtils.preencheFormulario(doc, acroForm, assinaturaModel.getCamposFormulario());
+            }
+
+            PDSignature signature = findExistingSignature(acroForm, assinaturaModel.getCampoAssinatura());
+            if (signature == null) {
+                signature = new PDSignature();
+            }
 
             if (doc.getVersion() >= 1.5f && accessPermissions == 0) {
                 SigUtils.setMDPPermission(doc, signature, 2);
             }
 
-            PDAcroForm acroForm = doc.getDocumentCatalog().getAcroForm();
             if (acroForm != null && acroForm.getNeedAppearances()) {
                 if (acroForm.getFields().isEmpty()) {
                     acroForm.getCOSObject().removeItem(COSName.NEED_APPEARANCES);
@@ -97,13 +111,12 @@ public class AssinaPdfImagem extends CreateSignatureBase {
             signatureOptions.setPreferredSignatureSize(SignatureOptions.DEFAULT_SIGNATURE_SIZE * 2);
             signatureOptions.setPage(visibleSignatureProperties.getPage() - 1);
             doc.addSignature(signature, this, signatureOptions);
-            doc.saveIncremental(fos);
+            doc.save(fos);
+            doc.close();
 
-            retorno = SigUtils.getPKCS7(doc, Files.readAllBytes(Paths.get(assinaturaModel.getCaminhoPdfAssinado())));
         }
 
         IOUtils.closeQuietly(signatureOptions);
-        return retorno;
     }
 
     /**
@@ -127,4 +140,23 @@ public class AssinaPdfImagem extends CreateSignatureBase {
         SigUtils.verifica(assinaturaModel.getPagina()).orElseThrow(() -> new Exception("É necessário informar o número da página"));
 
     }
+
+    private PDSignature findExistingSignature(PDAcroForm acroForm, String sigFieldName) {
+        PDSignature signature = null;
+        PDSignatureField signatureField;
+        if (acroForm != null) {
+            signatureField = (PDSignatureField) acroForm.getField(sigFieldName);
+            if (signatureField != null) {
+                signature = signatureField.getSignature();
+                if (signature == null) {
+                    signature = new PDSignature();
+                    signatureField.getCOSObject().setItem(COSName.V, signature);
+                } else {
+                    throw new IllegalStateException("The signature field " + sigFieldName + " is already signed.");
+                }
+            }
+        }
+        return signature;
+    }
+
 }

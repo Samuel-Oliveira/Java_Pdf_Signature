@@ -1,7 +1,8 @@
 package br.com.swconsultoria.pdf_signature.dom;
 
-
 import br.com.swconsultoria.certificado.Certificado;
+
+import java.util.Map;
 
 /**
  * @author Samuel Oliveira - samuk.exe@hotmail.com
@@ -22,6 +23,8 @@ public class AssinaturaModel {
     private int posicaoY;
     private int zoomImagem;
     private int pagina;
+    private String campoAssinatura;
+    private Map<String, String> camposFormulario;
 
     public String getCaminhoPdf() {
         return caminhoPdf;
@@ -125,5 +128,21 @@ public class AssinaturaModel {
 
     public void setPagina(int pagina) {
         this.pagina = pagina;
+    }
+
+    public String getCampoAssinatura() {
+        return campoAssinatura;
+    }
+
+    public void setCampoAssinatura(String campoAssinatura) {
+        this.campoAssinatura = campoAssinatura;
+    }
+
+    public Map<String, String> getCamposFormulario() {
+        return camposFormulario;
+    }
+
+    public void setCamposFormulario(Map<String, String> camposFormulario) {
+        this.camposFormulario = camposFormulario;
     }
 }

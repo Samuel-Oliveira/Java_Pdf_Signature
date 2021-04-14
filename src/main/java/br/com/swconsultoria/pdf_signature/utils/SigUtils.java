@@ -7,7 +7,17 @@ import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.PDResources;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceDictionary;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAppearanceStream;
 import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSignature;
+import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
+import org.apache.pdfbox.pdmodel.interactive.form.PDField;
+import org.apache.pdfbox.pdmodel.interactive.form.PDPushButton;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessableByteArray;
@@ -16,6 +26,8 @@ import org.bouncycastle.cms.CMSSignedData;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.*;
@@ -162,19 +174,84 @@ public class SigUtils {
         return null;
     }
 
-    public static CMSSignedData getPKCS7(PDDocument doc, byte[] pdfByte) throws CMSException, IOException {
+    public static CMSSignedData getPKCS7(String caminhoPdf) throws CMSException, IOException {
+        PDDocument doc = PDDocument.load(new File(caminhoPdf));
         PDSignature signature = doc.getSignatureDictionaries().get(0);
 
+        byte[] pdfByte = Files.readAllBytes(Paths.get(caminhoPdf));
         byte[] signatureAsBytes = signature.getContents(pdfByte);
         byte[] signedContentAsBytes = signature.getSignedContent(pdfByte);
+        doc.close();
         return new CMSSignedData(new CMSProcessableByteArray(signedContentAsBytes), signatureAsBytes);
     }
 
     public static void criaPKCS7(CMSSignedData signedData, String caminhoArquivo) throws IOException {
+
         File file = new File(caminhoArquivo);
         FileOutputStream os = new FileOutputStream(file);
         os.write(signedData.getEncoded());
         os.flush();
         os.close();
+    }
+
+    public static void preencheFormulario(PDDocument document, PDAcroForm acroForm, Map<String, String> campos) {
+        acroForm.getFields().forEach(field -> {
+            String valor = campos.get(field.getFullyQualifiedName());
+            if (verifica(valor).isPresent()) {
+                try {
+
+                    if (field instanceof PDPushButton) {
+                        preencheImagemForm(document, field, valor);
+                    } else {
+                        field.setValue(valor);
+                    }
+                    field.setReadOnly(true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private static void preencheImagemForm(PDDocument document, PDField field, String valor) throws IOException {
+
+        PDPushButton pdPushButton = (PDPushButton) field;
+
+        List<PDAnnotationWidget> widgets = pdPushButton.getWidgets();
+        if (widgets != null && widgets.size() > 0) {
+            PDAnnotationWidget annotationWidget = widgets.get(0);
+
+            File imageFile = new File(valor);
+            if (!imageFile.exists()) {
+                throw new RuntimeException("Imagem " + valor + " não existe para o campo " + field.getFullyQualifiedName());
+            }
+
+            PDImageXObject pdImageXObject = PDImageXObject.createFromFile(valor, document);
+            float imageScaleRatio = (float) pdImageXObject.getHeight() / (float) pdImageXObject.getWidth();
+
+            PDRectangle buttonPosition = getFieldArea(pdPushButton);
+            float height = buttonPosition.getHeight();
+            float width = height / imageScaleRatio;
+            float x = buttonPosition.getLowerLeftX();
+            float y = buttonPosition.getLowerLeftY();
+            PDAppearanceStream pdAppearanceStream = new PDAppearanceStream(document);
+            pdAppearanceStream.setResources(new PDResources());
+            try (PDPageContentStream pdPageContentStream = new PDPageContentStream(document, pdAppearanceStream)) {
+                pdPageContentStream.drawImage(pdImageXObject, x, y, width, height);
+            }
+            pdAppearanceStream.setBBox(new PDRectangle(x, y, width, height));
+            PDAppearanceDictionary pdAppearanceDictionary = annotationWidget.getAppearance();
+            if (pdAppearanceDictionary == null) {
+                pdAppearanceDictionary = new PDAppearanceDictionary();
+                annotationWidget.setAppearance(pdAppearanceDictionary);
+            }
+            pdAppearanceDictionary.setNormalAppearance(pdAppearanceStream);
+        }
+    }
+
+    private static PDRectangle getFieldArea(PDField field) {
+        COSDictionary fieldDict = field.getCOSObject();
+        COSArray fieldAreaArray = (COSArray) fieldDict.getDictionaryObject(COSName.RECT);
+        return new PDRectangle(fieldAreaArray);
     }
 }

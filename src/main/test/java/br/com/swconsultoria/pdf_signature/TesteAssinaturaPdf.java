@@ -3,8 +3,6 @@ package br.com.swconsultoria.pdf_signature;
 import br.com.swconsultoria.certificado.Certificado;
 import br.com.swconsultoria.certificado.CertificadoService;
 import br.com.swconsultoria.pdf_signature.dom.AssinaturaModel;
-import br.com.swconsultoria.pdf_signature.utils.SigUtils;
-import org.bouncycastle.cms.CMSSignedData;
 
 /**
  * @author Samuel Oliveira - samuk.exe@hotmail.com
@@ -34,8 +32,7 @@ public class TesteAssinaturaPdf {
             assinaturaModel.setTsa("http://sha256timestamp.ws.symantec.com/sha256/timestamp");
 
             AssinaPdf assinaPdf = new AssinaPdf(assinaturaModel);
-            CMSSignedData retorno = assinaPdf.assina();
-            SigUtils.criaPKCS7(retorno, "/d/teste/PdfSignature/pkcs7.p7s");
+            assinaPdf.assina();
 
         } catch (Exception e) {
             e.printStackTrace();
